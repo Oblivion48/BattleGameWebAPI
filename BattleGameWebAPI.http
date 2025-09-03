@@ -1,0 +1,6 @@
+@BattleGameWebAPI_HostAddress = http://localhost:5028
+
+GET {{BattleGameWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
