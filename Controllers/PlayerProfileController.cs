@@ -16,12 +16,11 @@ namespace BattleGameWebAPI.Controllers
             m_profileService = profileService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<PlayerProfile>>> GetProfiles()
+        [HttpPost]
+        public async Task<ActionResult<PlayerProfile>> GetOrCreateProfile(PlayerProfileDTO profile)
         {
-            List<PlayerProfile> profiles = new List<PlayerProfile>();
-            profiles.Add(await m_profileService.GetOrCreateProfile("Michael", "1234"));
-            return Ok(profiles);
+            PlayerProfile newOrExistingProfile = await m_profileService.GetOrCreateProfile(profile.Name, profile.Password);
+            return Ok(newOrExistingProfile.ToDTO());
         }
     }
 }

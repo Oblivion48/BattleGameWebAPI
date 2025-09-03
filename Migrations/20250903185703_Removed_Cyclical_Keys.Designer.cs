@@ -3,6 +3,7 @@ using BattleGameWebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BattleGameWebAPI.Migrations
 {
     [DbContext(typeof(BattleGameDatabase))]
-    partial class BattleGameDatabaseModelSnapshot : ModelSnapshot
+    [Migration("20250903185703_Removed_Cyclical_Keys")]
+    partial class Removed_Cyclical_Keys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,6 +32,9 @@ namespace BattleGameWebAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BaseDataId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Gold")
                         .HasColumnType("int");
 
@@ -36,6 +42,8 @@ namespace BattleGameWebAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BaseDataId");
 
                     b.HasIndex("PlayerProfileId")
                         .IsUnique();
@@ -51,13 +59,7 @@ namespace BattleGameWebAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountDataId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountDataId")
-                        .IsUnique();
 
                     b.ToTable("BaseData");
                 });
@@ -131,22 +133,21 @@ namespace BattleGameWebAPI.Migrations
 
             modelBuilder.Entity("BattleGameWebAPI.Models.AccountData", b =>
                 {
+                    b.HasOne("BattleGameWebAPI.Models.BaseData", "Base")
+                        .WithMany()
+                        .HasForeignKey("BaseDataId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BattleGameWebAPI.Models.PlayerProfile", "PlayerProfile")
                         .WithOne("AccountData")
                         .HasForeignKey("BattleGameWebAPI.Models.AccountData", "PlayerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PlayerProfile");
-                });
+                    b.Navigation("Base");
 
-            modelBuilder.Entity("BattleGameWebAPI.Models.BaseData", b =>
-                {
-                    b.HasOne("BattleGameWebAPI.Models.AccountData", null)
-                        .WithOne("Base")
-                        .HasForeignKey("BattleGameWebAPI.Models.BaseData", "AccountDataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("PlayerProfile");
                 });
 
             modelBuilder.Entity("BattleGameWebAPI.Models.SquadData", b =>
@@ -166,11 +167,6 @@ namespace BattleGameWebAPI.Migrations
                     b.Navigation("BaseData");
 
                     b.Navigation("UnitTemplateData");
-                });
-
-            modelBuilder.Entity("BattleGameWebAPI.Models.AccountData", b =>
-                {
-                    b.Navigation("Base");
                 });
 
             modelBuilder.Entity("BattleGameWebAPI.Models.BaseData", b =>
